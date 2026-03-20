@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Weather Dashboard</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <style>
+        body { background-color: #f8f9fa; }
+        .dashboard { margin: 20px; }
+        .tabs { margin-top: 20px; }
+        .tab-content { padding: 20px; border: 1px solid #dee2e6; border-radius: 0.25rem; }
+        .search { margin-bottom: 20px; }
+    </style>
+</head>
+<body>
+    <div class="dashboard">
+        <h1 class="text-center">Interactive Weather Dashboard</h1>
+        <div class="search text-center">
+            <input type="text" id="cityInput" placeholder="Enter city name" class="form-control" style="width: 300px; display: inline-block;">
+            <button id="searchBtn" class="btn btn-primary">Search</button>
+        </div>
+        <ul class="nav nav-tabs">
+            <li class="nav-item">
+                <a class="nav-link active" data-toggle="tab" href="#currentWeather">Current Weather</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" data-toggle="tab" href="#fiveDayForecast">5-Day Forecast</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" data-toggle="tab" href="#coordinates">Coordinates Search</a>
+            </li>
+        </ul>
+        <div class="tab-content">
+            <div class="tab-pane fade show active" id="currentWeather">
+                <h3>Current Weather</h3>
+                <div id="currentWeatherDisplay"></div>
+            </div>
+            <div class="tab-pane fade" id="fiveDayForecast">
+                <h3>5-Day Forecast</h3>
+                <div id="forecastDisplay"></div>
+            </div>
+            <div class="tab-pane fade" id="coordinates">
+                <h3>Search by Coordinates</h3>
+                <input type="number" id="latInput" placeholder="Latitude" class="form-control" step="any">
+                <input type="number" id="lonInput" placeholder="Longitude" class="form-control" step="any">
+                <button id="coordSearchBtn" class="btn btn-primary">Search</button>
+                <div id="coordWeatherDisplay"></div>
+            </div>
+        </div>
+    </div>
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <script>
+        const apiKey = 'YOUR_API_KEY'; // Replace with your OpenWeatherMap API key
+
+        document.getElementById('searchBtn').addEventListener('click', function() {
+            const city = document.getElementById('cityInput').value;
+            getCurrentWeather(city);
+            getFiveDayForecast(city);
+        });
+
+        document.getElementById('coordSearchBtn').addEventListener('click', function() {
+            const lat = document.getElementById('latInput').value;
+            const lon = document.getElementById('lonInput').value;
+            getCurrentWeatherByCoordinates(lat, lon);
+        });
+
+        function getCurrentWeather(city) {
+            fetch(`https://api.openweathermap.org/data/2.5/weather?q=${city}&appid=${apiKey}&units=metric`)
+                .then(response => response.json())
+                .then(data => {
+                    document.getElementById('currentWeatherDisplay').innerHTML = `<h4>${data.name}</h4><p>Temperature: ${data.main.temp} °C</p><p>Weather: ${data.weather[0].description}</p>`;
+                });
+        }
+
+        function getFiveDayForecast(city) {
+            fetch(`https://api.openweathermap.org/data/2.5/forecast?q=${city}&appid=${apiKey}&units=metric`)
+                .then(response => response.json())
+                .then(data => {
+                    let forecastHTML = '<h4>5-Day Forecast:</h4>';
+                    data.list.forEach(item => {
+                        forecastHTML += `<p>${new Date(item.dt * 1000).toLocaleDateString()}: ${item.main.temp} °C, ${item.weather[0].description}</p>`;
+                    });
+                    document.getElementById('forecastDisplay').innerHTML = forecastHTML;
+                });
+        }
+
+        function getCurrentWeatherByCoordinates(lat, lon) {
+            fetch(`https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&appid=${apiKey}&units=metric`)
+                .then(response => response.json())
+                .then(data => {
+                    document.getElementById('coordWeatherDisplay').innerHTML = `<h4>Coordinates Weather:</h4><p>Temperature: ${data.main.temp} °C</p><p>Weather: ${data.weather[0].description}</p>`;
+                });
+        }
+    </script>
+</body>
+</html>
